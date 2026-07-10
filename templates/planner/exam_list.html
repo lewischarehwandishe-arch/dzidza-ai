@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block page_title %}Exams{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Upcoming & Past Exams</h3>
+    {% if exams %}
+      <table>
+        <thead><tr><th>Title</th><th>Subject</th><th>Date</th><th>Days left</th><th></th></tr></thead>
+        <tbody>
+        {% for e in exams %}
+          <tr>
+            <td>{{ e.title }}</td>
+            <td><span class="subject-dot" style="background:{{ e.subject.color }}"></span>{{ e.subject.name }}</td>
+            <td class="small">{{ e.exam_date|date:"M j, Y H:i" }}</td>
+            <td>{% if e.days_remaining >= 0 %}<span class="badge badge-accent">{{ e.days_remaining }}d</span>{% else %}<span class="muted small">past</span>{% endif %}</td>
+            <td style="text-align:right;">
+              <form method="post" action="{% url 'exam_delete' e.pk %}" onsubmit="return confirm('Remove this exam?');" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-outline btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">✎</div><p>No exams scheduled yet.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Add Exam</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field"><label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Add Exam</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block page_title %}Progress & Analytics{% endblock %}
+{% block content %}
+
+<div class="grid grid-4 mb-16">
+  <div class="stat-card">
+    <div class="stat-label">Completed Sessions</div>
+    <div class="stat-value">{{ completed_sessions }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Missed Sessions</div>
+    <div class="stat-value">{{ missed_sessions }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Assignment Completion</div>
+    <div class="stat-value">{{ completion_rate }}%</div>
+  </div>
+  <div class="stat-card" style="text-align:center;">
+    <div class="stat-label">Productivity Score</div>
+    <div class="ring-wrap" style="width:70px;height:70px;">
+      <svg viewBox="0 0 100 100" width="70" height="70">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" stroke-width="10"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" stroke-width="10"
+          stroke-dasharray="{{ productivity_score|floatformat:0 }} 100" stroke-dashoffset="25"
+          transform="rotate(-90 50 50)" pathLength="100" stroke-linecap="round"/>
+      </svg>
+      <div class="ring-value" style="width:70px;height:70px;"><span class="num" style="font-size:1rem;">{{ productivity_score }}</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Hours Studied per Subject</h3>
+    <canvas id="subjectChart" height="220"></canvas>
+  </div>
+  <div class="card">
+    <h3>This Week's Study Minutes</h3>
+    <canvas id="weeklyChart" height="220"></canvas>
+  </div>
+</div>
+
+<div class="card mt-16">
+  <h3>Monthly Trend (last 6 months)</h3>
+  <canvas id="monthlyChart" height="90"></canvas>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const subjectData = {{ hours_per_subject_json|safe }};
+const weeklyData = {{ weekly_series_json|safe }};
+const monthlyData = {{ monthly_series_json|safe }};
+
+function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+new Chart(document.getElementById('subjectChart'), {
+  type: 'bar',
+  data: {
+    labels: subjectData.map(d => d.subject),
+    datasets: [{ label: 'Hours', data: subjectData.map(d => d.hours), backgroundColor: subjectData.map(d => d.color) }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'line',
+  data: {
+    labels: weeklyData.map(d => d.day),
+    datasets: [{ label: 'Minutes studied', data: weeklyData.map(d => d.minutes), borderColor: cssVar('--primary'), backgroundColor: cssVar('--primary-dim'), fill: true, tension: .3 }]
+  },
+  options: { responsive: true, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => d.label),
+    datasets: [{ label: 'Minutes studied', data: monthlyData.map(d => d.minutes), backgroundColor: cssVar('--accent') }]
+  },
+  options: { responsive: true, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

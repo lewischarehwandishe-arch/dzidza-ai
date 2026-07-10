@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load planner_extras %}
+{% block page_title %}Timetable{% endblock %}
+{% block content %}
+<div class="section-head">
+  <p class="muted small" style="margin:0;">Drag a class card between days to reschedule it. Free periods (06:00–23:00 study window) are shown below each day.</p>
+  {% if has_subjects %}
+    <a href="{% url 'timetable_add' %}" class="btn btn-primary btn-sm">+ Add Entry</a>
+  {% else %}
+    <a href="{% url 'subject_list' %}" class="btn btn-outline btn-sm">Add a subject first</a>
+  {% endif %}
+</div>
+
+<div class="tt-grid">
+  {% for num, label, entries in days %}
+    <div class="tt-day" data-day="{{ num }}">
+      <div class="tt-day-head">{{ label|slice:":3" }}</div>
+      {% for e in entries %}
+        <div class="tt-entry" draggable="true" data-id="{{ e.pk }}" style="border-left-color:{{ e.subject.color }};">
+          <div class="tt-subject">{{ e.subject.name }}</div>
+          <div class="tt-time">{{ e.start_time|time:"H:i" }}–{{ e.end_time|time:"H:i" }}</div>
+          <div class="muted" style="font-size:.7rem;">{{ e.get_study_type_display }}{% if e.location %} · {{ e.location }}{% endif %}</div>
+          <div class="flex gap-8" style="margin-top:6px;">
+            <a href="{% url 'timetable_edit' e.pk %}" class="small">Edit</a>
+            <form method="post" action="{% url 'timetable_delete' e.pk %}" onsubmit="return confirm('Delete this entry?');" style="display:inline;">
+              {% csrf_token %}<button type="submit" class="small" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:0;">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+      {% with slots=free_by_day|get_item:num %}
+        {% for slot in slots %}
+          <div class="tt-free">{{ slot.start|time:"H:i" }}–{{ slot.end|time:"H:i" }} free ({{ slot.duration_minutes }}m)</div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

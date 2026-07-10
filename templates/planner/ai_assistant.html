@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block page_title %}AI Study Assistant{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="section-head"><h3>Today's Plan</h3></div>
+  {% if daily_plan %}
+    <div class="timeline">
+      {% for item in daily_plan %}
+        <div class="timeline-item {% if item.type == 'free' %}free{% endif %}">
+          <div class="timeline-time">{{ item.start|time:"H:i" }}–{{ item.end|time:"H:i" }}</div>
+          {% if item.type == 'class' %}
+            <strong><span class="subject-dot" style="background:{{ item.entry.subject.color }}"></span>{{ item.entry.subject.name }}</strong>
+            <span class="muted small"> · {{ item.entry.get_study_type_display }}</span>
+          {% else %}
+            <strong>Free — {{ item.duration_minutes }} min</strong>
+            <p class="small" style="margin:4px 0 0;">{{ item.recommendation.summary }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted small">Add timetable entries to generate today's plan.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-head"><h3>Priority Subjects</h3></div>
+  {% if priority_subjects %}
+    <div class="grid grid-3">
+      {% for p in priority_subjects %}
+        <div class="stat-card">
+          <div class="flex gap-8"><span class="subject-dot" style="background:{{ p.subject.color }}"></span><strong>{{ p.subject.name }}</strong></div>
+          <div class="muted small mt-16">{{ p.reasons|join:", "|default:"Steady — keep it up" }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted small">Add exams, assignments and goals to get prioritised recommendations.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-head"><h3>Revision Schedules</h3></div>
+  {% if revision_plans %}
+    {% for rp in revision_plans %}
+      <h4><span class="subject-dot" style="background:{{ rp.exam.subject.color }}"></span>{{ rp.exam.title }} — {{ rp.exam.subject.name }} ({{ rp.exam.exam_date|date:"M j" }})</h4>
+      <table><tbody>
+        {% for step in rp.schedule %}
+          <tr><td class="mono small" style="width:110px;">{{ step.days_before_exam }} day(s) before</td><td class="small">{{ step.activity }}</td></tr>
+        {% endfor %}
+      </tbody></table>
+    {% endfor %}
+  {% else %}
+    <p class="muted small">No upcoming exams — add one in the Exams section to generate a countdown revision plan.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-head"><h3>This Week</h3></div>
+  <div class="grid" style="grid-template-columns: repeat(7, 1fr); gap:10px;">
+    {% for day in weekly_plan %}
+      <div class="tt-day">
+        <div class="tt-day-head">{{ day.date|date:"D j" }}</div>
+        {% for item in day.plan %}
+          {% if item.type == 'class' %}
+            <div class="tt-entry" style="border-left-color:{{ item.entry.subject.color }};">
+              <div class="tt-time">{{ item.start|time:"H:i" }}</div>
+              <div class="tt-subject" style="font-size:.78rem;">{{ item.entry.subject.name }}</div>
+            </div>
+          {% else %}
+            <div class="tt-free">{{ item.start|time:"H:i" }} · {{ item.duration_minutes }}m free</div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

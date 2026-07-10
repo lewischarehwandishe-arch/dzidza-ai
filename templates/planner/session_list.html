@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block page_title %}Study Sessions{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Recent Sessions</h3>
+    {% if sessions %}
+      <table>
+        <thead><tr><th>Type</th><th>Subject</th><th>Activity</th><th>When</th><th>Duration</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for s in sessions %}
+          <tr>
+            <td><span class="badge {% if s.session_type == 'study' %}badge-primary{% else %}badge-good{% endif %}">{{ s.get_session_type_display }}</span></td>
+            <td>{% if s.subject %}<span class="subject-dot" style="background:{{ s.subject.color }}"></span>{{ s.subject.name }}{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="small">{{ s.activity|default:"—" }}</td>
+            <td class="small">{{ s.start_time|date:"M j, H:i" }}</td>
+            <td class="mono small">{{ s.duration_minutes }}m</td>
+            <td><span class="badge {% if s.status == 'completed' %}badge-good{% elif s.status == 'missed' %}badge-danger{% else %}badge-primary{% endif %}">{{ s.get_status_display }}</span></td>
+            <td style="text-align:right;">
+              <form method="post" action="{% url 'session_delete' s.pk %}" onsubmit="return confirm('Delete this session?');" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-outline btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">⏱</div><p>No study sessions logged yet. Log sessions to track progress and get wellness reminders.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Log a Session</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field"><label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Log Session</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

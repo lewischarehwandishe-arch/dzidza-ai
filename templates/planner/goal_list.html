@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block page_title %}Study Goals{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Your Study Goals</h3>
+    {% if goals %}
+      <table>
+        <thead><tr><th>Goal</th><th>Subject</th><th>Target/wk</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for g in goals %}
+          <tr>
+            <td>{{ g.goal_text }}</td>
+            <td>{% if g.subject %}<span class="subject-dot" style="background:{{ g.subject.color }}"></span>{{ g.subject.name }}{% else %}<span class="muted">General</span>{% endif %}</td>
+            <td>{{ g.target_hours_per_week }}h</td>
+            <td>{% if g.is_active %}<span class="badge badge-good">Active</span>{% else %}<span class="badge badge-primary">Paused</span>{% endif %}</td>
+            <td style="text-align:right;">
+              <form method="post" action="{% url 'goal_delete' g.pk %}" onsubmit="return confirm('Delete this goal?');" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-outline btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">◉</div><p>No study goals yet. Goals help the AI Assistant prioritise your free time.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Add Goal</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field"><label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Add Goal</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

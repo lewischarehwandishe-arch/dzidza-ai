@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block page_title %}Reminders{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Your Reminders</h3>
+    {% if reminders %}
+      <table>
+        <thead><tr><th>Title</th><th>Category</th><th>When</th><th>Notify via</th><th></th></tr></thead>
+        <tbody>
+        {% for r in reminders %}
+          <tr>
+            <td>{% if r.is_done %}<s class="muted">{{ r.title }}</s>{% else %}{{ r.title }}{% endif %}</td>
+            <td><span class="badge badge-primary">{{ r.get_category_display }}</span></td>
+            <td class="small">{{ r.remind_at|date:"M j, H:i" }} {% if r.is_due_soon %}<span class="badge badge-accent">Soon</span>{% endif %}</td>
+            <td class="small muted">
+              {% if r.notify_push %}Push {% endif %}{% if r.notify_email %}Email {% endif %}{% if r.notify_inapp %}In-app{% endif %}
+            </td>
+            <td style="text-align:right; white-space:nowrap;">
+              <form method="post" action="{% url 'reminder_toggle' r.pk %}" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-outline btn-sm" type="submit">{% if r.is_done %}Undo{% else %}Done{% endif %}</button>
+              </form>
+              <form method="post" action="{% url 'reminder_delete' r.pk %}" onsubmit="return confirm('Delete this reminder?');" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-sm" style="background:none;border:none;color:var(--danger);cursor:pointer;" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">⏰</div><p>No reminders yet.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>New Reminder</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field"><label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Create Reminder</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

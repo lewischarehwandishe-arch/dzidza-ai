@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+{% if subjects_count == 0 %}
+<div class="card empty-state">
+  <div class="mark">◈</div>
+  <h3>Let's set up your planner</h3>
+  <p class="muted">Add your subjects first, then build your timetable to unlock free-time detection and study recommendations.</p>
+  <a href="{% url 'subject_list' %}" class="btn btn-primary">Add your first subject</a>
+</div>
+{% endif %}
+
+{% if wellness %}
+<div class="alert alert-{% if wellness.level == 'warning' %}warning{% else %}info{% endif %}">
+  {{ wellness.message }}
+</div>
+{% endif %}
+
+<div class="grid grid-4 mb-16">
+  <div class="stat-card">
+    <div class="stat-label">Weekly Study Hours</div>
+    <div class="stat-value">{{ weekly_hours }}h</div>
+    <div class="stat-sub">this week</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Study Hours</div>
+    <div class="stat-value">{{ total_hours }}h</div>
+    <div class="stat-sub">all time</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Break Time Logged</div>
+    <div class="stat-value">{{ break_minutes }}m</div>
+    <div class="stat-sub">recovery matters</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Missed Sessions</div>
+    <div class="stat-value">{{ missed_sessions }}</div>
+    <div class="stat-sub">stay on track</div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="section-head"><h3>Today's Classes</h3><span class="muted small">{{ today|date:"l, M j" }}</span></div>
+    {% if todays_classes %}
+      <table>
+        <tbody>
+        {% for c in todays_classes %}
+          <tr>
+            <td class="mono" style="white-space:nowrap;">{{ c.start_time|time:"H:i" }}–{{ c.end_time|time:"H:i" }}</td>
+            <td><span class="subject-dot" style="background:{{ c.subject.color }}"></span>{{ c.subject.name }}</td>
+            <td class="muted small">{{ c.location|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted small">No classes scheduled today — a great day for focused self-study.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="section-head"><h3>Available Free Time — Right Now</h3></div>
+    {% if current_free_slot %}
+      <div class="flex gap-12 mb-16">
+        <div class="free-badge">{{ current_free_slot.duration_minutes }}m</div>
+        <div>
+          <div><strong class="mono">{{ current_free_slot.start|time:"H:i" }}–{{ current_free_slot.end|time:"H:i" }}</strong></div>
+          <div class="muted small">Free period detected</div>
+        </div>
+      </div>
+      {% if current_recommendation %}
+        <p class="small">{{ current_recommendation.summary }}</p>
+        {% for block in current_recommendation.blocks %}
+          <div class="flex gap-8" style="margin-bottom:6px;">
+            <span class="badge {% if block.subject %}badge-primary{% else %}badge-good{% endif %}">{{ block.minutes }}m</span>
+            <span class="small">{% if block.subject %}<span class="subject-dot" style="background:{{ block.subject.color }}"></span>{{ block.subject.name }} — {% endif %}{{ block.activity }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      <p class="muted small">You're in class right now, or outside study hours (06:00–23:00). Check the <a href="{% url 'free_time' %}">Free Time</a> page for today's full breakdown.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2 mt-16">
+  <div class="card">
+    <div class="section-head"><h3>Upcoming Classes</h3></div>
+    {% if upcoming_classes %}
+      <table><tbody>
+        {% for c in upcoming_classes %}
+        <tr>
+          <td class="small">{{ c.get_day_of_week_display }}</td>
+          <td class="mono small">{{ c.start_time|time:"H:i" }}</td>
+          <td><span class="subject-dot" style="background:{{ c.subject.color }}"></span>{{ c.subject.name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody></table>
+    {% else %}<p class="muted small">No upcoming classes — add entries in Timetable.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="section-head"><h3>Study Reminders</h3><a class="small" href="{% url 'reminder_list' %}">View all</a></div>
+    {% if upcoming_reminders %}
+      {% for r in upcoming_reminders %}
+        <div class="flex gap-8" style="margin-bottom:8px; justify-content:space-between;">
+          <div>
+            <div style="font-weight:600; font-size:.88rem;">{{ r.title }}</div>
+            <div class="muted small">{{ r.get_category_display }} · {{ r.remind_at|date:"M j, H:i" }}</div>
+          </div>
+          {% if r.is_due_soon %}<span class="badge badge-accent">Soon</span>{% endif %}
+        </div>
+      {% endfor %}
+    {% else %}<p class="muted small">No reminders set. <a href="{% url 'reminder_list' %}">Create one</a>.</p>{% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2 mt-16">
+  <div class="card">
+    <div class="section-head"><h3>Pending Assignments</h3><a class="small" href="{% url 'assignment_list' %}">View all</a></div>
+    {% if pending_assignments %}
+      {% for a in pending_assignments %}
+        <div class="flex gap-8" style="margin-bottom:8px; justify-content:space-between;">
+          <div>
+            <span class="subject-dot" style="background:{{ a.subject.color }}"></span>
+            <span style="font-weight:600; font-size:.88rem;">{{ a.title }}</span>
+            <div class="muted small" style="margin-left:16px;">Due {{ a.due_date|date:"M j, H:i" }}</div>
+          </div>
+          {% if a.is_overdue %}<span class="badge badge-danger">Overdue</span>{% else %}<span class="badge badge-primary">{{ a.get_priority_display }}</span>{% endif %}
+        </div>
+      {% endfor %}
+    {% else %}<p class="muted small">Nothing pending — nice work.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="section-head"><h3>Priority Subjects</h3><a class="small" href="{% url 'ai_assistant' %}">Full plan</a></div>
+    {% if priority_subjects %}
+      {% for p in priority_subjects %}
+        <div style="margin-bottom:10px;">
+          <div class="flex gap-8"><span class="subject-dot" style="background:{{ p.subject.color }}"></span><strong class="small">{{ p.subject.name }}</strong></div>
+          {% if p.reasons %}<div class="muted small" style="margin-left:16px;">{{ p.reasons|join:", " }}</div>{% endif %}
+        </div>
+      {% endfor %}
+    {% else %}<p class="muted small">Add exams, assignments or goals to see prioritised subjects.</p>{% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2 mt-16">
+  <div class="card">
+    <div class="section-head"><h3>Upcoming Exams</h3><a class="small" href="{% url 'exam_list' %}">Manage</a></div>
+    {% if upcoming_exams %}
+      {% for e in upcoming_exams %}
+        <div class="flex gap-8" style="margin-bottom:8px; justify-content:space-between;">
+          <div><span class="subject-dot" style="background:{{ e.subject.color }}"></span>{{ e.title }} — {{ e.subject.name }}</div>
+          <span class="badge badge-accent">{{ e.days_remaining }}d</span>
+        </div>
+      {% endfor %}
+    {% else %}<p class="muted small">No exams scheduled.</p>{% endif %}
+  </div>
+  <div class="card">
+    <div class="section-head"><h3>Wellness Tip</h3></div>
+    <p class="small">Balanced study includes rest. Aim for 45–60 minute focus blocks, a short break every 90 minutes, and 7–9 hours of sleep before class days.</p>
+    <a href="{% url 'session_list' %}" class="btn btn-outline btn-sm">Log a study session</a>
+  </div>
+</div>
+
+{% endblock %}

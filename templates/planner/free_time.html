@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block page_title %}Available Free Time{% endblock %}
+{% block content %}
+<p class="muted small">Free periods automatically detected between your classes, within study hours (06:00–23:00).</p>
+
+{% for day in days_data %}
+  <div class="card">
+    <div class="section-head"><h3>{{ day.date|date:"l, M j" }}</h3></div>
+    {% if day.slots %}
+      <div class="timeline">
+        {% for slot in day.slots %}
+          <div class="timeline-item free">
+            <div class="timeline-time">{{ slot.start|time:"H:i" }}–{{ slot.end|time:"H:i" }} · {{ slot.duration_minutes }} min free</div>
+            <p class="small" style="margin:4px 0 0;">{{ slot.recommendation.summary }}</p>
+            <div class="flex gap-8" style="flex-wrap:wrap;">
+              {% for block in slot.recommendation.blocks %}
+                <span class="badge {% if block.subject %}badge-primary{% else %}badge-good{% endif %}">
+                  {% if block.subject %}<span class="subject-dot" style="background:{{ block.subject.color }}"></span>{{ block.subject.name }} — {% endif %}{{ block.activity }} ({{ block.minutes }}m)
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted small">No free periods detected — fully booked, or no timetable entries for this day.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+{% endblock %}

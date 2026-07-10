@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Log in — DzidzaAI{% endblock %}
+{% block auth_content %}
+<link rel="stylesheet" href="{% static 'planner/css/style.css' %}">
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;">
+  <div class="card" style="width:100%; max-width:380px;">
+    <div class="brand" style="justify-content:center; margin-bottom:18px;"><span class="mark">DA</span> DzidzaAI</div>
+    <h2 style="text-align:center;">Welcome back</h2>
+    <p class="muted small" style="text-align:center;">Log in to manage your timetable and study plan.</p>
+    {% if form.errors %}<div class="alert alert-error">Invalid username or password.</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="field"><label>Username</label><input class="form-control" type="text" name="username" required autofocus></div>
+      <div class="field"><label>Password</label><input class="form-control" type="password" name="password" required></div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center;" type="submit">Log in</button>
+    </form>
+    <p class="small muted" style="text-align:center; margin-top:14px;">No account? <a href="{% url 'register' %}">Create one</a></p>
+  </div>
+</div>
+<script src="{% static 'planner/js/app.js' %}"></script>
+{% endblock %}

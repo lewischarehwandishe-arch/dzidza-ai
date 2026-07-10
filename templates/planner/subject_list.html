@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block page_title %}Subjects{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Your Subjects</h3>
+    {% if subjects %}
+      <table>
+        <thead><tr><th>Subject</th><th>Performance</th><th></th></tr></thead>
+        <tbody>
+        {% for s in subjects %}
+          <tr>
+            <td><span class="subject-dot" style="background:{{ s.color }}"></span>{{ s.name }}</td>
+            <td>{{ s.performance_score }}%</td>
+            <td style="text-align:right;">
+              <form method="post" action="{% url 'subject_delete' s.pk %}" onsubmit="return confirm('Delete {{ s.name }} and all related data?');" style="display:inline;">
+                {% csrf_token %}<button class="btn btn-outline btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">◈</div><p>No subjects yet. Add your first one to unlock timetable and study features.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Add Subject</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field">
+          <label>{{ field.label }}</label>{{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Add Subject</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

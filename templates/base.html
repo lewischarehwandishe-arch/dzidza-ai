@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DzidzaAI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'planner/css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="mark">DA</span> DzidzaAI</div>
+
+    <div class="nav-group">
+      <span class="nav-label">Overview</span>
+      <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><span class="nav-icon">◆</span> Dashboard</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'ai_assistant' %}active{% endif %}" href="{% url 'ai_assistant' %}"><span class="nav-icon">✦</span> AI Assistant</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'progress' %}active{% endif %}" href="{% url 'progress' %}"><span class="nav-icon">▲</span> Progress</a>
+    </div>
+
+    <div class="nav-group">
+      <span class="nav-label">Schedule</span>
+      <a class="nav-link {% if request.resolver_match.url_name == 'timetable' %}active{% endif %}" href="{% url 'timetable' %}"><span class="nav-icon">▦</span> Timetable</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'free_time' %}active{% endif %}" href="{% url 'free_time' %}"><span class="nav-icon">○</span> Free Time</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'session_list' %}active{% endif %}" href="{% url 'session_list' %}"><span class="nav-icon">⏱</span> Study Sessions</a>
+    </div>
+
+    <div class="nav-group">
+      <span class="nav-label">Planning</span>
+      <a class="nav-link {% if request.resolver_match.url_name == 'subject_list' %}active{% endif %}" href="{% url 'subject_list' %}"><span class="nav-icon">◈</span> Subjects</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'assignment_list' %}active{% endif %}" href="{% url 'assignment_list' %}"><span class="nav-icon">▤</span> Assignments</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}" href="{% url 'exam_list' %}"><span class="nav-icon">✎</span> Exams</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'goal_list' %}active{% endif %}" href="{% url 'goal_list' %}"><span class="nav-icon">◉</span> Study Goals</a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'reminder_list' %}active{% endif %}" href="{% url 'reminder_list' %}"><span class="nav-icon">⏰</span> Reminders</a>
+    </div>
+
+    <div class="nav-group">
+      <span class="nav-label">Account</span>
+      <a class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}"><span class="nav-icon">✉</span> Notifications</a>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+        <button type="submit" class="nav-link" style="width:100%; text-align:left; background:none; border:none; cursor:pointer;"><span class="nav-icon">⎋</span> Logout ({{ user.username }})</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="mobile-topbar">
+      <button class="icon-btn" id="menu-btn" aria-label="Open menu">☰</button>
+      <div class="brand" style="margin:0; font-size:1.05rem;"><span class="mark">S</span> DzidzaAI</div>
+      <button class="icon-btn" onclick="toggleTheme()"><span id="theme-icon-mobile">🌙</span></button>
+    </header>
+    <header class="topbar">
+      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+      <button class="icon-btn" onclick="toggleTheme()"><span id="theme-icon">🌙</span></button>
+    </header>
+    <div class="content">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% else %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="{% static 'planner/js/app.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

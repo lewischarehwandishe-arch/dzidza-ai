@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create account — DzidzaAI{% endblock %}
+{% block auth_content %}
+<link rel="stylesheet" href="{% static 'planner/css/style.css' %}">
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;">
+  <div class="card" style="width:100%; max-width:420px;">
+    <div class="brand" style="justify-content:center; margin-bottom:18px;"><span class="mark">DA</span> DzidzaAI</div>
+    <h2 style="text-align:center;">Create your account</h2>
+    <p class="muted small" style="text-align:center;">Your own private timetable, reminders and study plan.</p>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="small muted">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-primary" style="width:100%; justify-content:center;" type="submit">Create account</button>
+    </form>
+    <p class="small muted" style="text-align:center; margin-top:14px;">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+  </div>
+</div>
+<script src="{% static 'planner/js/app.js' %}"></script>
+{% endblock %}

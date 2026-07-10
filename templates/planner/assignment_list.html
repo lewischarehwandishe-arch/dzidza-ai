@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block page_title %}Assignments{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px;">
+  <div class="card">
+    <h3>Assignments</h3>
+    {% if assignments %}
+      <table>
+        <thead><tr><th>Title</th><th>Subject</th><th>Due</th><th>Priority</th><th></th></tr></thead>
+        <tbody>
+        {% for a in assignments %}
+          <tr>
+            <td>{% if a.completed %}<s class="muted">{{ a.title }}</s>{% else %}{{ a.title }}{% endif %}</td>
+            <td><span class="subject-dot" style="background:{{ a.subject.color }}"></span>{{ a.subject.name }}</td>
+            <td class="small {% if a.is_overdue %}" style="color:var(--danger);{% else %}"{% endif %}>{{ a.due_date|date:"M j, H:i" }}</td>
+            <td><span class="badge badge-primary">{{ a.get_priority_display }}</span></td>
+            <td style="text-align:right; white-space:nowrap;">
+              <form method="post" action="{% url 'assignment_toggle' a.pk %}" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-outline btn-sm" type="submit">{% if a.completed %}Undo{% else %}Complete{% endif %}</button>
+              </form>
+              <form method="post" action="{% url 'assignment_delete' a.pk %}" onsubmit="return confirm('Delete this assignment?');" style="display:inline;">{% csrf_token %}
+                <button class="btn btn-sm" style="background:none;border:none;color:var(--danger);cursor:pointer;" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="mark">▤</div><p>No assignments yet.</p></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Add Assignment</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field"><label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Add Assignment</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
