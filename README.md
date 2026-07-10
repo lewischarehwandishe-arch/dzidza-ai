@@ -1,4 +1,4 @@
-# DzidzaAI & Timetable Management System
+# DzidzaAI 
 
 A Django web app for students to manage their timetable, discover free time
 automatically, get AI-style study recommendations, track reminders, and
